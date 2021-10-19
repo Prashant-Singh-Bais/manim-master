@@ -1,23 +1,39 @@
 
+from pickle import FALSE, TRUE
+from manim.utils.color import DARK_BLUE, LIGHT_GRAY
+from matplotlib.pyplot import axes, pink
+from numpy.lib.nanfunctions import _nanmedian1d
 from manimlib import *
+#from manim import *
 import numpy as np
+import math
+import random
+
+from pyglet.com import pIUnknown
 
 class GraphExample(Scene):
     def construct(self):
-        ax = Axes((-3, 10), (-1, 8))
+        #ax = Axes((-3, 10), (-1, 8))
+        #ax.add_coordinate_labels()
+        ax = NumberPlane(x_range=[-3,10], y_range=[-1,8])
         ax.add_coordinate_labels()
-
-
         curve1 = ax.get_graph(lambda x: 2 * np.sin(x))
 
         self.add(ax,curve1)
 
-        area = ax.get_area_under_graph(curve1, x_range = (0,2), fill_color=BLUE, fill_opacity=1)
+        #area = ax.get_area_under_graph(graph = curve1, x_range = (0.0,2.0))
+
+        area = ax.get_area_under_graph(
+                        curve1,
+                        (PI / 2, 3 * PI / 2),
+                        
+                    )
         
+        self.add(ax, curve1, area)
         #ax.get_area_under_graph(graph=curve, x_range= (0,2))
 
-        self.add(curve1, area)
-        self.wait(1)
+        #self.add(curve1, area)
+        #self.wait(1)
         
         '''sin_graph = axes.get_graph(
             lambda x: 2 * math.sin(x),

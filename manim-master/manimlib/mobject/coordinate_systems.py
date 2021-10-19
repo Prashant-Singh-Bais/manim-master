@@ -266,9 +266,128 @@ class CoordinateSystem():
         )
         return result
 
-    def get_area_under_graph(self, graph, x_range, fill_color=BLUE, fill_opacity=1):
-        # TODO
-        pass
+    def get_area(
+        self,
+        graph: "ParametricFunction",
+        x_range: Optional[Tuple[float, float]] = None,
+        color: Union[Color, Iterable[Color]] = [BLUE, GREEN],
+        opacity: float = 0.3,
+        bounded_graph: "ParametricFunction" = None,
+        **kwargs,
+    ):
+        """Returns a :class:`~.Polygon` representing the area under the graph passed.
+
+        Examples
+        --------
+
+        .. manim:: GetAreaExample
+            :save_last_frame:
+
+            class GetAreaExample(Scene):
+                def construct(self):
+                    ax = Axes().add_coordinates()
+                    curve = ax.get_graph(lambda x: 2 * np.sin(x), color=DARK_BLUE)
+                    area = ax.get_area(
+                        curve,
+                        x_range=(PI / 2, 3 * PI / 2),
+                        color=(GREEN_B, GREEN_D),
+                        opacity=1,
+                    )
+
+                    self.add(ax, curve, area)
+
+        Parameters
+        ----------
+        graph
+            The graph/curve for which the area needs to be gotten.
+        x_range
+            The range of the minimum and maximum x-values of the area. ``x_range = [x_min, x_max]``.
+        color
+            The color of the area. Creates a gradient if a list of colors is provided.
+        opacity
+            The opacity of the area.
+        bounded_graph
+            If a secondary :attr:`graph` is specified, encloses the area between the two curves.
+        kwargs
+            Additional parameters passed to :class:`~.Polygon`
+
+        Returns
+        -------
+        :class:`~.Polygon`
+            The :class:`~.Polygon` representing the area.
+
+        Raises
+        ------
+        :exc:`ValueError`
+            When x_ranges do not match (either area x_range, graph's x_range or bounded_graph's x_range).
+        """
+        if x_range is None:
+            a = graph.t_min
+            b = graph.t_max
+        else:
+            a, b = x_range
+        if bounded_graph is not None:
+            if bounded_graph.t_min > b:
+                raise ValueError(
+                    f"Ranges not matching: {bounded_graph.t_min} < {b}",
+                )
+            if bounded_graph.t_max < a:
+                raise ValueError(
+                    f"Ranges not matching: {bounded_graph.t_max} > {a}",
+                )
+            a = max(a, bounded_graph.t_min)
+            b = min(b, bounded_graph.t_max)
+
+        if bounded_graph is None:
+            points = (
+                [self.c2p(a)]
+                + [p for p in graph.points if a <= self.p2c(p)[0] <= b]
+                + [self.c2p(b)]
+            )
+        else:
+            points = [p for p in graph.points if a <= self.p2c(p)[0] <= b] + [
+                p for p in bounded_graph.points if a <= self.p2c(p)[0] <= b
+            ][::-1]
+        return Polygon(*points, **kwargs).set_opacity(opacity).set_color(color)
+
+    def angle_of_tangent(
+        self,
+        x: float,
+        graph: "ParametricFunction",
+        dx: float = 1e-8,
+    ) -> float:
+        """Returns the angle to the x-axis of the tangent
+        to the plotted curve at a particular x-value.
+
+        Examples
+        --------
+
+        .. code-block:: python
+
+            ax = Axes()
+            curve = ax.get_graph(lambda x: x ** 2)
+            ax.angle_of_tangent(x=3, graph=curve)
+            # 1.3825747960950903
+
+
+        Parameters
+        ----------
+        x
+            The x-value at which the tangent must touch the curve.
+        graph
+            The :class:`~.ParametricFunction` for which to calculate the tangent.
+        dx
+            The change in `x` used to determine the angle of the tangent to the curve.
+
+        Returns
+        -------
+        :class:`float`
+            The angle of the tangent to the curve.
+        """
+
+        p0 = self.input_to_graph_point(x, graph)
+        p1 = self.input_to_graph_point(x + dx, graph)
+        return angle_of_vector(p1 - p0)
 
 
 class Axes(VGroup, CoordinateSystem):
