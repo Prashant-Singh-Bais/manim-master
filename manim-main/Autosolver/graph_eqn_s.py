@@ -24,8 +24,8 @@ a = ["has an acceleration of "+ str(X5) +r"$ m/s^2$" ]
 
 vv = X1 + X5*X3;
 
-A1 = X3*X1;
-A2 = 0.5*X3*(vv-X1);
+A2 = X3*X1;
+A1 = 0.5*X3*(vv-X1);
 
 
 def listToString(q): 
@@ -157,7 +157,7 @@ class T_labelExample(Scene):
         eqn = VGroup(
             Tex(r"Given: time of motion = ", str(X3), r" s"),
         )
-        self.play(Write(eqn[0][0]))
+        self.play(Write(eqn[0][0].next_to(l1, DOWN)))
         self.play(Transform(l1[7],l1[7].set_color(PINK)))
         self.play(Write(eqn[0][1].set_color(PINK).next_to(eqn[0][0],RIGHT)))
         self.play(Write(eqn[0][2].next_to(eqn[0][1],RIGHT)))
@@ -181,7 +181,7 @@ class T_labelExample(Scene):
         self.add(v_line)
 
 
-        # finding answer
+        # final point
         h_line = always_redraw(lambda: axes.get_horizontal_line(dot3.get_left()))
         h_line = h_line.set_stroke(LIGHT_PINK)
         
@@ -204,26 +204,95 @@ class T_labelExample(Scene):
         curve1 = axes.get_graph(lambda x: (X1) + (X5)*x , x_range=[0, X3+2], color=BLUE_C)
         curve2 = axes.get_graph(lambda x: (X1)  , x_range=[0, X3+2], color=BLUE_C)
         area = axes.get_area(curve1, [0, X3], color=GREEN, opacity=0.5)
-        area1 = axes.get_area(curve1, [0, X3], bounded_graph=curve2, color=ORANGE, opacity=0.6)
-        area2 = axes.get_area(curve2, [0, X3], color=PINK, opacity=0.6)
-        self.play(Create(area))
-        self.play(Create(area1))
-        self.play(Create(area2))
+        area1 = axes.get_area(curve1, [0, X3], bounded_graph=curve2, color=LIGHT_BROWN, opacity=0.6)
+        area2 = axes.get_area(curve2, [0, X3], color=YELLOW_E, opacity=0.6)
+
+        
+        self.wait(2)
+        self.play(FadeIn(area1), FadeIn(area1))
+        self.play(FadeOut(h_line))
+
+
+        #self.play(Create(area1))
+        #self.play(Create(area2))
 
         #area braces
 
-        brace_a11 = Brace(area1, direction = RIGHT)
-        brace_a12 = Brace(area1, direction = UP)
-        brace_a21 = Brace(area2, direction = RIGHT)
+        brace_a11 = Brace(area1, direction = RIGHT).set_color(BLUE)
+        brace_a12 = Brace(area1, direction = UP).set_color(BLUE)
+        brace_a21 = Brace(area2, direction = RIGHT).set_color(BLUE)
+        brace_a22 = Brace(area2, direction = UP).set_color(BLUE)
 
-        label_a11 = Text(str(X5-X1)).set_stroke(YELLOW).scale(1/2)
-        label_a12 = Tex(str(X3)).set_stroke(YELLOW)
-        label_a21 = Tex(str(X1)).set_stroke(YELLOW)
-        always(label_a11.next_to, brace_a11, RIGHT)
-        self.add(area1, brace_a11, label_a11)
-        always(label_a12.next_to, brace_a12, UP)
-        self.add(area1, brace_a12, label_a12)
-        always(label_a21.next_to, brace_a21, RIGHT)
-        self.add(area1, brace_a21, label_a21)
+        label_a11 = brace_a11.get_text(str(vv-X1)).set_color(BLUE)
+        label_a12 = brace_a12.get_text(str(X3)).set_color(BLUE)
+        label_a21 = brace_a21.get_text(str(X1)).set_color(BLUE)
+        label_a22 = brace_a22.get_text(str(X3)).set_color(BLUE)
 
-        
+        #area text1
+        eqn = VGroup(
+            Tex(r"Area under", r" v-t", r" curve gives displacemet covered in the given time interval").scale(0.6),
+            Tex(r"lets highlight the region for which area needs to be found").scale(0.6),
+            Tex(r"Total area =", r"$a_{1}$", " + ",  r"$a_{2}$").scale(0.6),
+            Tex(r"$a_{1}$",r"$ = \frac{1}{2} \times base \times height $", ).scale(0.6),
+            Tex(r"$a_{1}$",r"$ = \frac{1}{2} \times$",str(vv-X1), r"$\times$", str(X3), r" =  ", str(A1)).scale(0.6),
+
+            Tex(r"$a_{2}$",r"$= length \times breadth$", ).scale(0.6),
+            Tex(r"$a_{1}$",r" = ", str(X1), r"$\times $", str(X3), r" =  ", str(A2)).scale(0.6),
+
+            Tex(r"Total area = ", str(A1+A2)).scale(0.6),
+            Tex(r"Hence, displacemet covered = ", str(A1+A2), r" m").scale(0.6),
+
+            #Tex(r"Total area =", str(A1), r" + ",   str(A1)).scale(0.6)
+    
+        )
+        # calcuation animation
+        #Area shading
+        self.play(Write(eqn[0].next_to(l1, DOWN)))
+        self.wait(2)
+        self.play(FadeOut(eqn[0]))
+        self.play(Write(eqn[1].next_to(l1, DOWN)))
+        self.play(FadeOut(eqn[1]))
+        self.play(Create(area))
+        self.wait(2)
+        #Breaking into two
+        eqn[2][1].set_color(GREEN)
+        eqn[2][3].set_color(YELLOW_E)
+        self.play(Write(eqn[2].next_to(l1, DOWN)))
+        self.play(FadeIn(area1), FadeIn(area2))
+        self.add(eqn[2], area1, area2)
+        #garea = self.add(area1, area2)
+        #a1
+        #self.play(Transform(area1, area1.set_color(GREEN).set_opacity(0.5)) )
+        #self.play(Transform(area2, area2.set_opacity(0.2)) )
+#############
+        self.add(area1, brace_a11, brace_a12, label_a11,label_a12 )
+        self.play(Write(eqn[3].next_to(eqn[2], DOWN)))
+        self.wait(2)
+        self.play(Write(eqn[4].next_to(eqn[3], DOWN)))
+        self.wait(2)
+        self.play(FadeOut(eqn[3], eqn[4]))
+        self.play(FadeOut(area1, brace_a11, label_a11, brace_a12, label_a12))
+        #self.play(Transform(area1, area1.set_color(LIGHT_BROWN)) )
+        self.wait()
+        #a2
+        #self.play(Transform(area2, area2.set_color(GREEN).set_opacity(0.5)) )
+        #self.play(Transform(area1, area1.set_opacity(0.2)) )
+#################        
+        self.add(area2, brace_a21, brace_a22,label_a21, label_a22)
+        self.play(Write(eqn[5].next_to(eqn[2], DOWN)))
+        self.wait()
+        self.play(Write(eqn[6].next_to(eqn[5], DOWN)))
+        self.wait()
+        self.play(FadeOut(eqn[5], eqn[6]))
+        self.play(FadeOut(area2, brace_a21, label_a21, brace_a22, label_a22))
+        #self.play(Transform(area2, area2.set_color(YELLOW_E)) )
+        self.wait()
+        #total
+        #self.play(Transform(eqn[2], eqn[9]))
+        #self.play(Transform(eqn[2][3], Tex(str(A2)).scale(0.6)))
+        self.play(FadeOut(area1, area2))
+        self.play(FadeIn(area))
+        self.play(Write(eqn[7].next_to(eqn[2], DOWN)))
+        self.wait()
+        self.play(Write(eqn[8].next_to(eqn[7], DOWN)))
+        self.wait()
